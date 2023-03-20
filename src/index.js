@@ -1,74 +1,95 @@
-// import './css/styles.css';
-// import debounce from 'lodash.debounce';
-// import { fetchCountries } from './fetchCountries.js';
-// import Notiflix from 'notiflix';
+import './css/styles.css';
 
-// const DEBOUNCE_DELAY = 300;
+import Notiflix, { Notify } from 'notiflix';
+// import SimpleLightbox from "simplelightbox";
+// import "simplelightbox/dist/simple-lightbox.min.css";
 
-// const refs = {
-// input: document.querySelector("#search-box"),
-// countryList: document.querySelector(".country-list"),
-// countryInfo: document.querySelector(".country-info"),
-// }
+import GetImages from './js/api';
 
-// refs.input.addEventListener("input", debounce(handleSearch, DEBOUNCE_DELAY));
+const refs = {
+  searchForm: document.querySelector('search-form'),
+  galleryRef: document.querySelector('.gallery'),
+  loadMoreBtn: document.querySelector('.load-more'),
+};
 
+refs.searchForm.addEventListener('submit', onSearch);
+refs.loadMoreBtn.addEventListener('click', onLoadMoreButtonClick);
 
-// function handleSearch(e) {
-// //   e.preventDefault();
-//     const countrySearch = e.target.value.trim();
+const getImagesOnSubmit = new GetImages();
+
+async function onSearch(event) {
+  event.preventDefault();
+  getImages.query = event.currentTarget.elements.searchQuery.value.trim();
+  getImages.resetPage();
+  try {
+    const imagesSet = await getImages.passImages();
+    if (imagesSet.length === 0) {
+      clearGallery();
+      refs.loadMoreBtn.style.display = 'none';
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+      return;
+    }
+    clearGallery();
+    renderContent(imagesSet);
     
-//   if (countrySearch === '') {
-//       refs.countryList.innerHTML = '';
-//       refs.countryInfo.innerHTML = '';
-//     return;
-//   }
-//     if (countrySearch !== '')
-//     {
-//         fetchCountries(countrySearch)
-//     .then(response => {
-//       if (response.length > 10) {
-//         Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
-//         return;
-//       } else if (response.length > 1 && response.length <= 10) {
-//                refs.countryList.innerHTML = '';
-//       refs.countryInfo.innerHTML = '';
-//             renderCountryList(response, refs.countryList);
-//             return;
-//       } else
-//               refs.countryList.innerHTML = '';
-//       refs.countryInfo.innerHTML = '';
-//         renderCountryInfo(response, refs.countryInfo);
-//     }).catch(error => {
-//         refs.countryList.innerHTML = '';
-//       refs.countryInfo.innerHTML = '';
-//       Notiflix.Notify.failure('Oops, there is no country with that name');
-//     });
-// };}
- 
+    getImages.incrementPage();
 
+    if (imagesSet.length < 40) {
+      refs.loadMoreBtn.style.display = 'none';
+      Notify.info("We're sorry, but you've reached the end of search results.");
+      return;
+    } else {
+      refs.loadMoreBtn.style.display = 'block';
+    }
+  } catch (error) {
+    Notify.failure('Sorry, an error occurred');
+  }
+}
 
-// function renderCountryList(response) {
+async function onLoadMoreBtnClick(event) {
+  try {
+    const nextImagesSet = await getImages.bringImages();
+    renderContent(nextImagesSet);
 
-//     const listItemHTML = response.map(country => `
-//         <li class="added_list"><img src="${country.flag}" alt="Flag of ${country.name}" class="flag_small">${country.name}</li>`).join('');
-        
-//     refs.countryList.insertAdjacentHTML('beforeend', listItemHTML);
+    getImages.incrementPage();
+  } catch (error) {
+    console.log(error);
+  }
+}
 
-// };
+function createCard(item) {
+  return `<div class="photo-card">
+  <img src="${item.webformatURL}" alt="${item.tags}" loading="lazy" height="200"/>
+  <div class="info">
+    <p class="info-item">   
+      <b>Likes </b>${item.likes}
+    </p>
+    <p class="info-item">
+      <b>Views</b>${item.views}
+    </p>
+    <p class="info-item">
+      <b>Comments</b>${item.comments}
+    </p>
+    <p class="info-item">
+      <b>Downloads</b>${item.downloads}
+    </p>
+  </div>
+</div>`;
+}
 
+function createGallery(array) {
+  return array.reduce((acc, item) => {
+    return acc + createCard(item);
+  }, '');
+}
 
-// function renderCountryInfo(response) {
-//     const countryHTML = response.map(country => `<div class="name_flag">   
-//     <img src="${country.flag}" alt="Flag of ${country.name}" class="flag"> 
-//     <h2>${country.name}</h2>
-//     </div>
-//     <ul class="list_options">
-//     <li><span>Population:</span>${country.population.toLocaleString()}</li>
-//     <li><span>Capital:</span>${country.capital}</li> 
-//     <li><span>Languages:</span>${country.languages.map((language) => language.name).join(", ")}</li> 
-//     </ul>
-//   `).join('');
-//   refs.countryInfo.insertAdjacentHTML('beforeend', countryHTML);
-// };
+function renderContent(array) {
+  const result = createGallery(array);
+  refs.galleryRef.insertAdjacentHTML('beforeend', result);
+}
 
+function clearGallery() {
+  refs.galleryRef.innerHTML = '';
+}
