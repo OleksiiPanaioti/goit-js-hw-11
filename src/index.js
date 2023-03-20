@@ -1,28 +1,26 @@
 import './css/styles.css';
-
-import Notiflix, { Notify } from 'notiflix';
-// import SimpleLightbox from "simplelightbox";
-// import "simplelightbox/dist/simple-lightbox.min.css";
-
-import GetImages from './js/api';
+import GetImages from './js/api.js';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const refs = {
-  searchForm: document.querySelector('search-form'),
+  searchForm: document.querySelector('#search-form'),
   galleryRef: document.querySelector('.gallery'),
   loadMoreBtn: document.querySelector('.load-more'),
 };
 
 refs.searchForm.addEventListener('submit', onSearch);
-refs.loadMoreBtn.addEventListener('click', onLoadMoreButtonClick);
+refs.loadMoreBtn.addEventListener('click', onLoadMoreBtnClick);
 
-const getImagesOnSubmit = new GetImages();
+const getImages = new GetImages();
+
+refs.loadMoreBtn.style.display = 'none';
 
 async function onSearch(event) {
   event.preventDefault();
   getImages.query = event.currentTarget.elements.searchQuery.value.trim();
   getImages.resetPage();
   try {
-    const imagesSet = await getImages.passImages();
+    const imagesSet = await getImages.bringImages();
     if (imagesSet.length === 0) {
       clearGallery();
       refs.loadMoreBtn.style.display = 'none';

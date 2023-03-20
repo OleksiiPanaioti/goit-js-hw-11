@@ -3,14 +3,6 @@ import axios from 'axios';
 const BASE_URL = 'https://pixabay.com/api/';
 const KEY = '34527642-ac518720cead8e0413be90d5a';
 
-
-// key - твій унікальний ключ доступу до API.
-// q - термін для пошуку. Те, що буде вводити користувач.
-// image_type - тип зображення. На потрібні тільки фотографії, тому постав значення photo.
-// orientation - орієнтація фотографії. Постав значення horizontal.
-// safesearch - фільтр за віком. Постав значення true.
-
-
 export default class GetImages {
   constructor() {
     this.searchQuery = '';
@@ -35,4 +27,3 @@ export default class GetImages {
     this.searchQuery = newQuery;
   }
 }
-
