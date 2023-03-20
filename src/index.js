@@ -16,19 +16,19 @@ refs.searchForm.addEventListener('submit', onSearch);
 refs.loadMoreBtn.addEventListener('click', onLoadMoreBtnClick);
 // refs.galleryRef.addEventListener('click', createImagesCardsMarkup);
 
-const getImages = new GetImages();
+const getImagesFromApi = new GetImages();
 
 refs.loadMoreBtn.style.display = 'none';
 
-async function onSearch(event) {
+async function onSearch(e) {
 
-  event.preventDefault();
+  e.preventDefault();
 
-  getImages.query = event.currentTarget.elements.searchQuery.value.trim();
-  getImages.resetPage();
+  getImagesFromApi.query = e.currentTarget.elements.searchQuery.value.trim();
+  getImagesFromApi.resetPage();
 
   try {
-    const imagesSet = await getImages.bringImages();
+    const imagesSet = await getImagesFromApi.bringImages();
     if (imagesSet.length === 0) {
       clearGallery();
       refs.loadMoreBtn.style.display = 'none';
@@ -36,7 +36,7 @@ async function onSearch(event) {
         'Sorry, there are no images matching your search query. Please try again.'
       );
       return;
-    } else if (getImages.query === '') {
+    } else if (getImagesFromApi.query === '') {
       clearGallery();
       refs.loadMoreBtn.style.display = 'none';
       return;
@@ -45,7 +45,7 @@ async function onSearch(event) {
     clearGallery();
     renderContent(imagesSet);
     
-    getImages.incrementPage();
+    getImagesFromApi.incrementPage();
 
     if (imagesSet.length < 40) {
       refs.loadMoreBtn.style.display = 'none';
@@ -62,10 +62,10 @@ async function onSearch(event) {
 
 async function onLoadMoreBtnClick(event) {
   try {
-    const nextImagesSet = await getImages.bringImages();
+    const nextImagesSet = await getImagesFromApi.bringImages();
     renderContent(nextImagesSet);
 
-    getImages.incrementPage();
+    getImagesFromApi.incrementPage();
   } catch (error) {
     console.log(error);
   }
