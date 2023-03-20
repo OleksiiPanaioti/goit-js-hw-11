@@ -2,6 +2,10 @@ import './css/styles.css';
 import GetImages from './js/api.js';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
+import SimpleLightbox from "simplelightbox";
+
+import "simplelightbox/dist/simple-lightbox.min.css";
+
 const refs = {
   searchForm: document.querySelector('#search-form'),
   galleryRef: document.querySelector('.gallery'),
@@ -10,15 +14,19 @@ const refs = {
 
 refs.searchForm.addEventListener('submit', onSearch);
 refs.loadMoreBtn.addEventListener('click', onLoadMoreBtnClick);
+// refs.galleryRef.addEventListener('click', createImagesCardsMarkup);
 
 const getImages = new GetImages();
 
 refs.loadMoreBtn.style.display = 'none';
 
 async function onSearch(event) {
+
   event.preventDefault();
+
   getImages.query = event.currentTarget.elements.searchQuery.value.trim();
   getImages.resetPage();
+
   try {
     const imagesSet = await getImages.bringImages();
     if (imagesSet.length === 0) {
@@ -28,7 +36,12 @@ async function onSearch(event) {
         'Sorry, there are no images matching your search query. Please try again.'
       );
       return;
+    } else if (getImages.query === '') {
+      clearGallery();
+      refs.loadMoreBtn.style.display = 'none';
+      return;
     }
+
     clearGallery();
     renderContent(imagesSet);
     
@@ -38,10 +51,11 @@ async function onSearch(event) {
       refs.loadMoreBtn.style.display = 'none';
       Notify.info("We're sorry, but you've reached the end of search results.");
       return;
-    } else {
+    }  else {
       refs.loadMoreBtn.style.display = 'block';
     }
-  } catch (error) {
+  }
+  catch (error) {
     Notify.failure('Sorry, an error occurred');
   }
 }
@@ -76,6 +90,21 @@ function createCard(item) {
   </div>
 </div>`;
 }
+
+// function createImagesCardsMarkup(galleryItems) {
+//     return galleryItems.map(({ webformatURL, largeImageURL, tags }) => {
+//         return ` 
+//         <a class="gallery__item" href="${largeImageURL}">
+//           <img class="gallery__image" src="${webformatURL}" alt="${tags}" />
+//         </a>
+//         `;
+//     }).join('');
+
+//     return markup
+
+// }
+
+
 
 function createGallery(array) {
   return array.reduce((acc, item) => {
